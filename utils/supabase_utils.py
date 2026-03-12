@@ -10,8 +10,22 @@ def get_supabase_client() -> Client:
     if not url or not key:
         return None
     try:
-        return create_client(url, key)
-    except Exception:
+        # Client'ı her seferinde baştan yaratıyoruz (Server disconnected hatasını önlemek için)
+        client = create_client(url, key)
+        
+        # Eğer daha önce giriş yapıldıysa, auth token'ı yeni client'a aktarıyoruz (RLS'yi geçmek için)
+        if 'supabase_session' in st.session_state and st.session_state.supabase_session:
+            try:
+                client.auth.set_session(
+                    st.session_state.supabase_session['access_token'],
+                    st.session_state.supabase_session['refresh_token']
+                )
+            except Exception as e:
+                print(f"Session set error: {e}")
+                
+        return client
+    except Exception as e:
+        print(f"Supabase Client Error: {e}")
         return None
 
 def is_valid_email(email):
@@ -25,6 +39,11 @@ def sign_in(email, password):
         supabase = get_supabase_client()
         if not supabase: return "Bağlantı kurulamadı."
         response = supabase.auth.sign_in_with_password({"email": email, "password": password})
+        if response.session:
+            st.session_state.supabase_session = {
+                'access_token': response.session.access_token,
+                'refresh_token': response.session.refresh_token
+            }
         return response
     except Exception as e:
         err_msg = str(e)
@@ -39,6 +58,11 @@ def sign_up(email, password):
         supabase = get_supabase_client()
         if not supabase: return "Bağlantı kurulamadı."
         response = supabase.auth.sign_up({"email": email, "password": password})
+        if response.session:
+            st.session_state.supabase_session = {
+                'access_token': response.session.access_token,
+                'refresh_token': response.session.refresh_token
+            }
         return response
     except Exception as e:
         err_msg = str(e)

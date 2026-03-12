@@ -49,9 +49,11 @@ def risk_onboarding():
                     "risk_tolerance": risk_tolerance,
                     "objective": objective
                 }
-                # Veritabanına kaydet
-                save_onboarding_data(user_id, profile_data)
-                
-            st.session_state.onboarding_complete = True
-            st.success("Profiliniz başarıyla kaydedildi!")
-            st.rerun()
+                # Veritabanına kaydet ve SADECE başarılıysa tamamlandı say
+                saved = save_onboarding_data(user_id, profile_data)
+                if saved:
+                    st.session_state.onboarding_complete = True
+                    st.success("✅ Profiliniz başarıyla kaydedildi!")
+                    st.rerun()
+                else:
+                    st.error("❌ Profil kaydedilemedi. Lütfen tekrar deneyin.")
