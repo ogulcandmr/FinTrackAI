@@ -11,6 +11,7 @@ st.set_page_config(
 
 from utils.supabase_utils import sign_in, sign_up, check_onboarding_status
 from screens.onboarding import risk_onboarding
+from screens.portfolio import render_portfolio_screen
 
 # --- STATE MANAGEMENT ---
 if 'user' not in st.session_state:
@@ -73,6 +74,14 @@ st.markdown("""
         height: 24px !important;
     }
 
+    /* Sidebar menü hizası */
+    [data-testid="stSidebar"] [role="radiogroup"] label {
+        padding-left: 0.5rem !important;
+        align-items: center !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stRadio"] > div {
+        flex-wrap: nowrap !important;
+    }
     /* Premium Background Image */
     .stApp {
         background: url("https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=2832&auto=format&fit=crop") no-repeat center center fixed !important;
@@ -307,8 +316,7 @@ def main():
             choice = render_sidebar()
             if choice == "🏛️ Dashboard": render_dashboard()
             elif choice == "💼 Portföyüm":
-                st.markdown("<h1 class='animate-page'>💼 Portföy Yönetimi</h1>", unsafe_allow_html=True)
-                st.info("Bu modül 2. ekip üyesi tarafından yapılandırılmaktadır.")
+                render_portfolio_screen()
             elif choice == "🛡️ Güvenlik & Profil":
                 st.markdown("<h1 class='animate-page'>🛡️ Güvenlik & Profil</h1>", unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
