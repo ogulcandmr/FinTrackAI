@@ -117,3 +117,31 @@ def save_onboarding_data(user_id, profile_data):
     except Exception as e:
         print(f"Onboarding kaydetme hatası: {e}")
         return False
+
+# --- PORTFÖY (Veri Katmanı ve Cüzdan Yönetimi) ---
+# Yerel SQLite kullanılır; Supabase portfolio şeması zorunlu değildir. Kayıt anında çalışır, canlı fiyat yfinance/ccxt ile gelir.
+
+from utils.portfolio_store import insert as _local_insert, select_by_user as _local_select, delete as _local_delete
+
+
+def portfolio_insert(user_id, asset_id, purchase_date, price, quantity):
+    """Portföye yeni pozisyon ekler. Yerel SQLite'a kaydeder."""
+    value = str(asset_id).strip().upper()
+    date_str = str(purchase_date)[:10] if purchase_date else ""
+    row, err = _local_insert(user_id, value, date_str, float(price), float(quantity))
+    if err:
+        return None, err
+    return row, None
+
+
+def portfolio_select_by_user(user_id):
+    """Kullanıcının tüm portföy kayıtlarını getirir (yerel depodan)."""
+    return _local_select(user_id)
+
+
+def portfolio_delete(record_id, user_id):
+    """Belirtilen portföy kaydını siler."""
+    ok, err = _local_delete(record_id, user_id)
+    if err:
+        return False, err
+    return True, None
