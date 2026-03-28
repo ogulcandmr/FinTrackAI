@@ -24,3 +24,16 @@ Bu modül, projenin kurumsal kimliğini ve teknik iskeletini oluşturur.
 pip install streamlit supabase yfinance ccxt prophet plotly textblob
 streamlit run app.py
 ```
+
+---
+
+## 📊 Modül 5: UI/UX & Final (5. Kişi)
+Bu modül, kullanıcının verilerini anlamlandırması için görselleştirme araçları sunar ve uygulamanın son cilasını atar.
+
+### 📈 Görselleştirmeler (Dashboard)
+- **Varlık Dağılımı (Pie Chart):** Plotly kütüphanesi ile kullanıcının portföyündeki varlıkların dağılımını gösteren interaktif pasta grafik eklendi.
+- **Fiyat Analizi (Candlestick Chart):** Portföyde en yüksek hacme sahip varlığın son 1 aylık fiyat hareketini gösteren mum grafiği entegre edildi. Gerçek zamanlı veriler yfinance üzerinden sağlanır.
+
+### 🧹 Teknik Temizlik ve İzolasyon
+- **Modüler Yapı:** `app.py` içerisindeki statik dashboard kodları ve iş mantığı tamamen kuralına uygun şekilde `screens/dashboard.py` dosyasına taşınarak ayrıştırıldı.
+- **Grafik Hata Yönetimi:** BİST hisseleri (.IS formatı) ve Kripto paralar için özel ticker logic yazıldı. Uygulamanın çökmaması için `try-except` blokları uygulandı.

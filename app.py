@@ -12,14 +12,15 @@ st.set_page_config(
 from utils.supabase_utils import sign_in, sign_up, check_onboarding_status
 from screens.onboarding import risk_onboarding
 from screens.portfolio import render_portfolio_screen
+from screens.dashboard import render_dashboard
 
 # --- STATE MANAGEMENT ---
 if 'user' not in st.session_state:
-    st.session_state.user = None
+    st.session_state.user = {"email": "dev_test@fintrack.ai", "id": "test_dev_user"}
 if 'auth_mode' not in st.session_state:
     st.session_state.auth_mode = "login"
 if 'onboarding_complete' not in st.session_state:
-    st.session_state.onboarding_complete = False
+    st.session_state.onboarding_complete = True
 
 # --- LUXURY UI/UX DESIGN (CUSTOM CSS) ---
 st.markdown("""
@@ -74,10 +75,15 @@ st.markdown("""
         height: 24px !important;
     }
 
-    /* Sidebar menü hizası */
+    /* Menü hizası ve Genel Tüm Form Elemanları (Radio, Label vb.) Renk Düzeltmesi */
     [data-testid="stSidebar"] [role="radiogroup"] label {
         padding-left: 0.5rem !important;
         align-items: center !important;
+    }
+    [role="radiogroup"] label p, .stMarkdown p, .stCheckbox label span {
+        color: #f8fafc !important;
+        font-weight: 500 !important;
+        font-size: 1.05rem !important;
     }
     [data-testid="stSidebar"] [data-testid="stRadio"] > div {
         flex-wrap: nowrap !important;
@@ -146,6 +152,18 @@ st.markdown("""
         padding: 45px !important;
         box-shadow: 0 40px 100px -20px rgba(0,0,0,0.8) !important;
         pointer-events: auto !important;
+    }
+
+    /* Form Etiketleri (Label) ve Görünürlük Düzeltmeleri */
+    label[data-testid="stWidgetLabel"] p, [data-testid="stForm"] label p {
+        color: #f1f5f9 !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.5px !important;
+    }
+    
+    div[data-baseweb="select"] > div, .stNumberInput input {
+        color: #1e293b !important; /* Keep input text dark inside white boxes */
+        font-weight: 500 !important;
     }
 
     /* Input & Button Styles */
@@ -286,25 +304,7 @@ def auth_screen():
                     st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
 
-def render_dashboard():
-    st.markdown("""
-        <div class="animate-page" style="background: rgba(15, 23, 42, 0.4); border-radius: 30px; padding: 40px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 2.5rem; backdrop-filter: blur(20px);">
-            <h1 style="font-size: 3.5rem; margin-bottom: 0.5rem; font-weight: 800; letter-spacing: -1px;">🏠 Finansal Kokpit</h1>
-            <p style="color: #94a3b8; font-size: 1.2rem; font-weight: 400;">Akıllı varlık yönetimi ve anlık veri analizi bir arada.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    col1, col2, col3 = st.columns(3)
-    metric_css = """
-    <div style="background: rgba(30, 41, 59, 0.5); padding: 30px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(20px); animation: pageAppear 0.8s ease-out;">
-        <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">{title}</p>
-        <h2 style="font-size: 3rem; margin: 0; color: {val_color}; font-weight: 800;">{value}</h2>
-        <div style="height: 10px;"></div>
-        <p style="color: {sub_color}; font-size: 1rem; font-weight: 600; margin-bottom: 0;">{sub}</p>
-    </div>
-    """
-    with col1: st.markdown(metric_css.format(title="📊 Net Portföy", value="0.00 TL", val_color="white", sub="⚖️ Veri İsteniyor", sub_color="#64748b"), unsafe_allow_html=True)
-    with col2: st.markdown(metric_css.format(title="🚀 Günlük Verim", value="+0.00 TL", val_color="#10b981", sub="📈 +%0.00", sub_color="#10b981"), unsafe_allow_html=True)
-    with col3: st.markdown(metric_css.format(title="💎 Varlık Havuzu", value="0", val_color="white", sub="💼 Çeşitlilik Bekleniyor", sub_color="#64748b"), unsafe_allow_html=True)
+
 
 def main():
     if st.session_state.user:
