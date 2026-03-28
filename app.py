@@ -12,6 +12,7 @@ st.set_page_config(
 from utils.supabase_utils import sign_in, sign_up, check_onboarding_status
 from screens.onboarding import risk_onboarding
 from screens.portfolio import render_portfolio_screen
+from screens.Dividend import render_dividend_screen
 
 # --- STATE MANAGEMENT ---
 if 'user' not in st.session_state:
@@ -198,7 +199,7 @@ def render_sidebar():
             """, unsafe_allow_html=True)
         
         # Fixed Emoji usage for professional look
-        menu = ["🏛️ Dashboard", "💼 Portföyüm", "📅 Temettü Takvimi", "🧠 AI Analiz Merkezi", "🛡️ Güvenlik & Profil"]
+        menu = ["🏛️ Dashboard", "💼 Portföyüm", "📅 Temettü Emekliliği Motoru", "🧠 AI Analiz Merkezi", "🛡️ Güvenlik & Profil"]
         choice = st.sidebar.radio("Navigasyon", menu, index=0, label_visibility="collapsed")
         
         st.sidebar.markdown("<br><br>", unsafe_allow_html=True)
@@ -317,6 +318,8 @@ def main():
             if choice == "🏛️ Dashboard": render_dashboard()
             elif choice == "💼 Portföyüm":
                 render_portfolio_screen()
+            elif choice == "📅 Temettü Emekliliği Motoru":
+                render_dividend_screen()
             elif choice == "🛡️ Güvenlik & Profil":
                 st.markdown("<h1 class='animate-page'>🛡️ Güvenlik & Profil</h1>", unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
