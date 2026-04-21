@@ -12,6 +12,9 @@ st.set_page_config(
 from utils.supabase_utils import sign_in, sign_up, check_onboarding_status
 from screens.onboarding import risk_onboarding
 from screens.portfolio import render_portfolio_screen
+from screens.Dividend import render_dividend_screen
+from screens.AiLab import render_ai_screen
+from screens.dashboard import render_dashboard
 
 # --- STATE MANAGEMENT ---
 if 'user' not in st.session_state:
@@ -20,6 +23,8 @@ if 'auth_mode' not in st.session_state:
     st.session_state.auth_mode = "login"
 if 'onboarding_complete' not in st.session_state:
     st.session_state.onboarding_complete = False
+if 'supabase_session' not in st.session_state:
+    st.session_state.supabase_session = None
 
 # --- LUXURY UI/UX DESIGN (CUSTOM CSS) ---
 st.markdown("""
@@ -198,7 +203,14 @@ def render_sidebar():
             """, unsafe_allow_html=True)
         
         # Fixed Emoji usage for professional look
-        menu = ["🏛️ Dashboard", "💼 Portföyüm", "📅 Temettü Takvimi", "🧠 AI Analiz Merkezi", "🛡️ Güvenlik & Profil"]
+        menu = [
+            "🏛️ Dashboard",
+            "💼 Portföyüm",
+            "📅 Temettü Emekliliği Motoru",
+            "🧠 AI Analiz Merkezi",
+            "🛡️ Güvenlik & Profil"
+        ]
+
         choice = st.sidebar.radio("Navigasyon", menu, index=0, label_visibility="collapsed")
         
         st.sidebar.markdown("<br><br>", unsafe_allow_html=True)
@@ -314,10 +326,16 @@ def main():
             st.markdown('</div>', unsafe_allow_html=True)
         else:
             choice = render_sidebar()
-            if choice == "🏛️ Dashboard": render_dashboard()
+            if choice == "🏛️ Dashboard":
+                render_dashboard()
             elif choice == "💼 Portföyüm":
                 render_portfolio_screen()
+            elif choice == "📅 Temettü Emekliliği Motoru":
+                render_dividend_screen()
+            elif choice == "🧠 AI Analiz Merkezi":
+                render_ai_screen()
             elif choice == "🛡️ Güvenlik & Profil":
+
                 st.markdown("<h1 class='animate-page'>🛡️ Güvenlik & Profil</h1>", unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
                 with st.expander("📝 Yatırımcı Karakterinizi Güncelleyin", expanded=True):

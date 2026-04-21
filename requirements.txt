@@ -1,0 +1,10 @@
+streamlit
+supabase
+python-dotenv
+yfinance
+plotly
+pandas
+numpy
+requests
+textblob
+prophet
