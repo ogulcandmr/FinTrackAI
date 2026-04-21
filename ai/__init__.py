@@ -11,12 +11,12 @@ Modules
 - ``main``       : Pipeline orchestrator.
 """
 
-from config import settings
-from news import fetch_news
-from sentiment import analyze_sentiment
-from forecast import run_forecast
-from db import insert_sentiment, insert_sentiment_batch, fetch_sentiments
-from main import run_pipeline, PipelineResult
+from ai.config import settings
+from ai.news import fetch_news
+from ai.sentiment import analyze_sentiment
+from ai.forecast import run_forecast
+from ai.db import insert_sentiment, insert_sentiment_batch, fetch_sentiments
+from ai.main import run_pipeline, PipelineResult
 
 __all__ = [
     "settings",
