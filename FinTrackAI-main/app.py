@@ -50,9 +50,17 @@ st.markdown("""
     /* Ensure Header (which contains the sidebar toggle button) stays on top */
     [data-testid="stHeader"] {
         background-color: transparent !important;
-        z-index: 99999 !important;
+        z-index: 999999 !important;
+        visibility: visible !important;
+        opacity: 1 !important;
     }
     
+    /* Sidebar genişliği ve kaydırma çubuğunu kapat */
+    [data-testid="stSidebar"] {
+        min-width: 250px !important;
+        overflow: visible !important;
+    }
+
     /* FORCE SIDEBAR TOGGLE VISIBILITY WHEN CLOSED */
     [data-testid="collapsedControl"] {
         display: flex !important;
@@ -106,15 +114,45 @@ st.markdown("""
         position: relative;
     }
 
-    /* Fixed Luxury Sidebar */
+    /* Sidebar daima üstte ve görünür */
     [data-testid="stSidebar"] {
-        background-color: rgba(15, 23, 42, 0.7) !important;
-        backdrop-filter: blur(25px);
-        border-right: 1px solid rgba(255, 255, 255, 0.05);
+        background-color: rgba(15, 23, 42, 0.85) !important;
+        backdrop-filter: blur(25px) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+        z-index: 99999 !important;
+        position: relative !important;
+        min-width: 16rem !important;
+        transform: none !important;
+        visibility: visible !important;
+        opacity: 1 !important;
     }
-    
-    [data-testid="stSidebar"] > div {
-        padding-top: 3.5rem !important;
+
+    /* Sidebar toggle butonu (collapsedControl) — her zaman görünür */
+    button[kind="header"],
+    [data-testid="collapsedControl"],
+    [data-testid="stSidebarCollapsedControl"] {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        z-index: 9999999 !important;
+        position: fixed !important;
+        top: 12px !important;
+        left: 12px !important;
+        background-color: rgba(15, 23, 42, 0.9) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 10px !important;
+        padding: 8px !important;
+        color: white !important;
+    }
+    [data-testid="collapsedControl"]:hover,
+    [data-testid="stSidebarCollapsedControl"]:hover {
+        background-color: #3b82f6 !important;
+    }
+    [data-testid="collapsedControl"] svg,
+    [data-testid="stSidebarCollapsedControl"] svg {
+        fill: white !important;
+        width: 20px !important;
+        height: 20px !important;
     }
 
     /* Slider Interaction Fix */
@@ -269,6 +307,12 @@ def auth_screen():
                                 st.session_state.onboarding_complete = check_onboarding_status(res.user.id)
                                 st.rerun()
                 st.markdown("<br>", unsafe_allow_html=True)
+                
+                if st.button("🛠️ Test Modu İle Giriş (Supabase Olmadan)"):
+                    st.session_state.user = {"email": "test@fintrack.ai", "id": "test-user-id"}
+                    st.session_state.onboarding_complete = True
+                    st.rerun()
+                
                 if st.button("Henüz hesabınız yok mu? Hemen Katılın ✨", key="to_reg", use_container_width=True):
                     st.session_state.auth_mode = "register"
                     st.rerun()
