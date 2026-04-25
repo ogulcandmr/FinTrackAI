@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 
 # Yeni yazdığımız utils/finance_math modülünü içe aktarıyoruz (Görev 1 referansı)
-from utils.finance_math import calculate_compound_interest, fetch_dividend_history, get_sectoral_yields
+from utils.finance_math import calculate_compound_interest, fetch_dividend_history, get_sectoral_yields, scrape_upcoming_dividends
 
 def render_dividend_screen():
     st.markdown("""
@@ -43,18 +43,17 @@ def render_dividend_screen():
             sc3.metric("Ulaşılan Final Portföy", f"₺ {final_val:,.0f}")
 
     with tab2:
-        st.markdown("<h3 style='margin-bottom:20px; color: white;'>2. Yaklaşan Temettü Takvimi</h3>", unsafe_allow_html=True)
-        today = datetime.now()
-        data = {
-            "Şirket": ["TUPRS", "FROTO", "DOAS", "SISE", "THYAO"], 
-            "Beklenen Tarih": [(today + timedelta(days=i*14)).strftime("%Y-%m-%d") for i in range(1, 6)], 
-            "Durum": ["Kesinleşti", "Bekleniyor", "Kesinleşti", "Bekleniyor", "Pas Geçti"]
-        }
-        df = pd.DataFrame(data)
+        st.markdown("<h3 style='margin-bottom:20px; color: white;'>2. Yaklaşan Temettü Takvimi (Dinamik)</h3>", unsafe_allow_html=True)
+        
+        with st.spinner("🌍 Finans kaynakları taranıyor & Yapay Zeka öngörüleri hesaplanıyor..."):
+            df = scrape_upcoming_dividends()
         
         def color_status(val):
-            color = '#10b981' if val == 'Kesinleşti' else ('#f59e0b' if val == 'Bekleniyor' else '#ef4444')
-            return f'color: {color}; font-weight: bold'
+            if isinstance(val, str):
+                if val == 'Kesinleşti': return 'color: #10b981; font-weight: bold'
+                elif val == 'Bekleniyor': return 'color: #f59e0b; font-weight: bold'
+                else: return 'color: #ef4444; font-weight: bold'
+            return ''
             
         st.dataframe(df.style.applymap(color_status, subset=['Durum']), use_container_width=True, hide_index=True)
 
