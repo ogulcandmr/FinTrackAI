@@ -298,26 +298,6 @@ def auth_screen():
                     st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
 
-def render_dashboard():
-    st.markdown("""
-        <div class="animate-page" style="background: rgba(15, 23, 42, 0.4); border-radius: 30px; padding: 40px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 2.5rem; backdrop-filter: blur(20px);">
-            <h1 style="font-size: 3.5rem; margin-bottom: 0.5rem; font-weight: 800; letter-spacing: -1px;">🏠 Finansal Kokpit</h1>
-            <p style="color: #94a3b8; font-size: 1.2rem; font-weight: 400;">Akıllı varlık yönetimi ve anlık veri analizi bir arada.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    col1, col2, col3 = st.columns(3)
-    metric_css = """
-    <div style="background: rgba(30, 41, 59, 0.5); padding: 30px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(20px); animation: pageAppear 0.8s ease-out;">
-        <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">{title}</p>
-        <h2 style="font-size: 3rem; margin: 0; color: {val_color}; font-weight: 800;">{value}</h2>
-        <div style="height: 10px;"></div>
-        <p style="color: {sub_color}; font-size: 1rem; font-weight: 600; margin-bottom: 0;">{sub}</p>
-    </div>
-    """
-    with col1: st.markdown(metric_css.format(title="📊 Net Portföy", value="0.00 TL", val_color="white", sub="⚖️ Veri İsteniyor", sub_color="#64748b"), unsafe_allow_html=True)
-    with col2: st.markdown(metric_css.format(title="🚀 Günlük Verim", value="+0.00 TL", val_color="#10b981", sub="📈 +%0.00", sub_color="#10b981"), unsafe_allow_html=True)
-    with col3: st.markdown(metric_css.format(title="💎 Varlık Havuzu", value="0", val_color="white", sub="💼 Çeşitlilik Bekleniyor", sub_color="#64748b"), unsafe_allow_html=True)
-
 def main():
     if st.session_state.user:
         if not st.session_state.onboarding_complete:
