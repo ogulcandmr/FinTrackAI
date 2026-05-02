@@ -1,5 +1,4 @@
-# FinTrackAI - 2. Kısım: Portföy Yönetimi (Veri Katmanı ve Cüzdan Yönetimi)
-# Fiyatlar USD; kar/zarar TL (1 USD = 44 TL).
+# FinTrackAI — Portfolio module (data layer & wallet). Prices in USD; P&L in TRY (1 USD = 44 TRY).
 
 import streamlit as st
 from datetime import date
@@ -7,7 +6,7 @@ from utils.supabase_utils import portfolio_insert, portfolio_select_by_user, por
 from utils.portfolio_engine import compute_portfolio_pnl
 from utils.market_data_utils import get_current_price
 
-# [Geri almak için: POPULAR_ASSETS listesini ve "Popüler hisse ve kriptolar" form bloğunu silin]
+# To revert: remove POPULAR_ASSETS and the quick-add form block.
 POPULAR_ASSETS = [
     ("Apple", "AAPL"), ("Microsoft", "MSFT"), ("Google", "GOOGL"), ("Amazon", "AMZN"), ("Nvidia", "NVDA"),
     ("Tesla", "TSLA"), ("Meta", "META"), ("Netflix", "NFLX"), ("Adobe", "ADBE"), ("PayPal", "PYPL"),
@@ -39,7 +38,7 @@ def _fmt_pct(val: float) -> str:
 def render_portfolio_screen():
     user = st.session_state.get("user")
     if not user:
-        st.warning("Portföy için giriş yapmalısınız.")
+        st.warning("You must sign in to view your portfolio.")
         return
 
     user_id = user["id"]
@@ -47,10 +46,9 @@ def render_portfolio_screen():
     if _AUTOREFRESH_AVAILABLE:
         st_autorefresh(interval=2 * 60 * 1000, key="portfolio_autorefresh")
 
-    # Ana başlık
     st.markdown("""
         <div class="animate-page" style="background: rgba(15, 23, 42, 0.4); border-radius: 30px; padding: 40px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 2rem; backdrop-filter: blur(20px);">
-            <h1 style="font-size: 3rem; margin-bottom: 0; font-weight: 800;">💼 Veri Katmanı ve Cüzdan Yönetimi</h1>
+            <h1 style="font-size: 3rem; margin-bottom: 0; font-weight: 800;">💼 Data layer & wallet management</h1>
         </div>
         """, unsafe_allow_html=True)
 
@@ -61,7 +59,7 @@ def render_portfolio_screen():
         rows = portfolio_select_by_user(user_id)
         enriched_rows, summary = compute_portfolio_pnl(rows)
 
-        # --- Özet kartları (TL) ---
+        # Summary cards (TRY)
         card_css = """
         <div style="background: rgba(30, 41, 59, 0.5); padding: 28px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(20px);">
             <p style="color: #64748b; font-size: 0.85rem; margin-bottom: 10px; font-weight: 700; text-transform: uppercase;">{title}</p>
@@ -72,10 +70,10 @@ def render_portfolio_screen():
         col1, col2, col3 = st.columns(3)
         with col1:
             st.markdown(card_css.format(
-                title="📊 Toplam Varlık (TL)",
+                title="📊 Total value (TRY)",
                 value=f"{summary['total_value_tl']:,.2f} TL",
                 val_color="white",
-                sub=f"{summary['total_value_usd']:,.2f} USD · Maliyet: {summary['total_cost_tl']:,.2f} TL",
+                sub=f"{summary['total_value_usd']:,.2f} USD · Cost basis: {summary['total_cost_tl']:,.2f} TL",
                 sub_color="#94a3b8"
             ), unsafe_allow_html=True)
         with col2:
@@ -83,7 +81,7 @@ def render_portfolio_screen():
             daily_pct = summary["daily_change_pct"]
             daily_color = "#10b981" if daily_tl >= 0 else "#ef4444"
             st.markdown(card_css.format(
-                title="📈 Günlük Değişim (TL)",
+                title="📈 Daily change (TRY)",
                 value=f"{_fmt_money(daily_tl)} TL",
                 val_color=daily_color,
                 sub=_fmt_pct(daily_pct),
@@ -94,7 +92,7 @@ def render_portfolio_screen():
             pnl_pct = summary["total_pnl_pct"]
             pnl_color = "#10b981" if pnl_tl >= 0 else "#ef4444"
             st.markdown(card_css.format(
-                title="💰 Toplam Kar/Zarar (TL)",
+                title="💰 Total P&L (TRY)",
                 value=f"{_fmt_money(pnl_tl)} TL",
                 val_color=pnl_color,
                 sub=_fmt_pct(pnl_pct),
@@ -103,10 +101,8 @@ def render_portfolio_screen():
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # --- Yeni hisse: popüler hızlı ekle + elle giriş ---
-        with st.expander("➕ Yeni Hisse Ekle", expanded=not enriched_rows):
-            # Bilindik hisse/kripto — hızlı ekle (satır hizalı)
-            st.markdown("**Bilindik şirketlerin hisse ve kriptoları**")
+        with st.expander("➕ Add new position", expanded=not enriched_rows):
+            st.markdown("**Popular stocks & crypto (quick add)**")
             st.markdown("""
                 <style>
                 [data-testid="stForm"] [data-testid="column"] > div { align-items: flex-end !important; }
@@ -117,45 +113,45 @@ def render_portfolio_screen():
             with st.form("quick_add_popular"):
                 qcol1, qcol2, qcol3 = st.columns([2, 1.1, 1])
                 with qcol1:
-                    quick_choice = st.selectbox("Varlık", options=popular_options, key="quick_choice", label_visibility="collapsed")
+                    quick_choice = st.selectbox("Asset", options=popular_options, key="quick_choice", label_visibility="collapsed")
                 with qcol2:
-                    quick_qty = st.number_input("Adet", min_value=0.0, value=0.0, step=0.01, format="%.4f", key="quick_qty", label_visibility="collapsed")
+                    quick_qty = st.number_input("Quantity", min_value=0.0, value=0.0, step=0.01, format="%.4f", key="quick_qty", label_visibility="collapsed")
                 with qcol3:
-                    quick_submit = st.form_submit_button("Hızlı Ekle")
+                    quick_submit = st.form_submit_button("Quick add")
                 if quick_submit and quick_choice and quick_qty > 0:
-                    # Sembolü seçenek metninden çıkar: "Apple (AAPL)" -> AAPL
+                    # Parse symbol from option label: "Apple (AAPL)" -> AAPL
                     sym = quick_choice.split("(")[-1].rstrip(")")
-                    with st.spinner("Fiyat getiriliyor..."):
+                    with st.spinner("Fetching price..."):
                         price = get_current_price(sym)
                     if price and price > 0:
                         data, err = portfolio_insert(user_id, sym, str(date.today()), price, quick_qty)
                         if err:
-                            st.error(f"Eklenemedi: {err}")
+                            st.error(f"Could not add: {err}")
                         else:
-                            st.success(f"**{sym}** {quick_qty:,.4f} adet eklendi (güncel fiyat: {price:,.2f} USD).")
+                            st.success(f"**{sym}** added {quick_qty:,.4f} units (live price: {price:,.2f} USD).")
                             st.rerun()
                     else:
-                        st.error(f"{sym} için fiyat alınamadı. Lütfen 'Kar/Zararı güncelle' sonra tekrar deneyin.")
+                        st.error(f"Could not fetch a price for {sym}. Try again after refreshing P&L.")
                 elif quick_submit and quick_qty <= 0:
-                    st.warning("Adet 0'dan büyük olmalı.")
+                    st.warning("Quantity must be greater than zero.")
 
             st.markdown("---")
             r1, r2 = st.columns([2, 1])
             with r1:
-                suggest_symbol = st.text_input("Hisse veya kripto sembolü", key="suggest_sym", placeholder="Örn: AAPL, TTWO, BTC, ETH, XRP, THYAO")
+                suggest_symbol = st.text_input("Stock or crypto symbol", key="suggest_sym", placeholder="e.g. AAPL, TTWO, BTC, ETH, XRP, THYAO")
             with r2:
                 st.markdown("<br>", unsafe_allow_html=True)
-                get_price_btn = st.button("🔃 Fiyat getir (USD)")
+                get_price_btn = st.button("🔃 Fetch price (USD)")
             if get_price_btn and suggest_symbol:
-                with st.spinner("Fiyat getiriliyor..."):
+                with st.spinner("Fetching price..."):
                     p = get_current_price(suggest_symbol.strip())
                 if p is not None and p > 0:
                     st.session_state["portfolio_suggested_price"] = p
                     st.session_state["portfolio_suggested_symbol"] = suggest_symbol.strip().upper()
-                    st.success(f"**{suggest_symbol.strip().upper()}** güncel fiyat: **{p:,.2f} USD** — Aşağıdaki formda alış fiyatı alanı güncellendi.")
+                    st.success(f"**{suggest_symbol.strip().upper()}** live price: **{p:,.2f} USD** — purchase price in the form below was updated.")
                     st.rerun()
                 else:
-                    st.error("Bu sembol için fiyat alınamadı. Sembolü kontrol edip tekrar deneyin (örn: AAPL, TTWO, BTC, ETH).")
+                    st.error("Could not fetch a price for this symbol. Check the symbol and try again (e.g. AAPL, TTWO, BTC, ETH).")
                     if "portfolio_suggested_price" in st.session_state:
                         del st.session_state["portfolio_suggested_price"]
 
@@ -163,38 +159,38 @@ def render_portfolio_screen():
                 c1, c2 = st.columns(2)
                 with c1:
                     asset_id = st.text_input(
-                        "Varlık sembolü (Hisse: AAPL, TTWO | Kripto: BTC, ETH veya BTC/USDT)",
+                        "Asset symbol (stock: AAPL, TTWO | crypto: BTC, ETH or BTC/USDT)",
                         value=st.session_state.get("portfolio_suggested_symbol", ""),
-                        placeholder="AAPL veya BTC",
+                        placeholder="AAPL or BTC",
                         key="form_asset"
                     )
-                    purchase_date = st.date_input("Alış tarihi", value=date.today(), key="form_date")
+                    purchase_date = st.date_input("Purchase date", value=date.today(), key="form_date")
                 with c2:
                     default_price = st.session_state.get("portfolio_suggested_price") or 0.0
-                    price = st.number_input("Alış fiyatı (USD, birim)", min_value=0.0, value=float(default_price), step=0.01, format="%.4f", key="form_price")
-                    quantity = st.number_input("Adet", min_value=0.0, value=0.0, step=0.0001, format="%.4f", key="form_qty")
-                if st.form_submit_button("Portföye Ekle"):
+                    price = st.number_input("Purchase price (USD per unit)", min_value=0.0, value=float(default_price), step=0.01, format="%.4f", key="form_price")
+                    quantity = st.number_input("Quantity", min_value=0.0, value=0.0, step=0.0001, format="%.4f", key="form_qty")
+                if st.form_submit_button("Add to portfolio"):
                     if not (asset_id and price > 0 and quantity > 0):
-                        st.error("Varlık sembolü, fiyat (USD) ve adet zorunludur (pozitif).")
+                        st.error("Asset symbol, USD price, and quantity are required (all positive).")
                     else:
                         data, err = portfolio_insert(user_id, asset_id.strip().upper(), str(purchase_date), price, quantity)
                         if err:
-                            st.error(f"Eklenemedi: {err}")
+                            st.error(f"Could not add: {err}")
                         else:
                             if "portfolio_suggested_price" in st.session_state:
                                 del st.session_state["portfolio_suggested_price"]
                             if "portfolio_suggested_symbol" in st.session_state:
                                 del st.session_state["portfolio_suggested_symbol"]
-                            st.success("Pozisyon eklendi. Fiyatlar USD; kar/zarar TL (1 USD = 44 TL) hesaplanır.")
+                            st.success("Position added. Prices are in USD; P&L is shown in TRY (1 USD = 44 TRY).")
                             st.rerun()
 
-        # --- Hisseler: USD fiyat + TL kar/zarar ---
-        st.markdown("### 📋 Hisseler")
-        if st.button("🔄 Kar/Zararı güncelle", key="manual_refresh_list", use_container_width=True):
+        # Positions: USD quotes + TRY P&L
+        st.markdown("### 📋 Positions")
+        if st.button("🔄 Refresh P&L", key="manual_refresh_list", use_container_width=True):
             pass
         st.markdown("<br>", unsafe_allow_html=True)
         if not enriched_rows:
-            st.info("Henüz hisse yok. Yukarıdan 'Yeni Hisse Ekle' ile ekleyebilirsiniz.")
+            st.info("No positions yet. Add one with **Add new position** above.")
             return
 
         for i, row in enumerate(enriched_rows):
@@ -210,10 +206,10 @@ def render_portfolio_screen():
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                             <div>
                                 <strong style="font-size: 1.1rem;">{row.get('asset_id', '-')}</strong>
-                                <span style="color: #64748b; margin-left: 10px;">Alış: {row.get('purchase_date', '-')} · {float(row.get('quantity', 0)):,.4f} adet @ {purchase_usd:,.2f} USD</span>
+                                <span style="color: #64748b; margin-left: 10px;">Bought: {row.get('purchase_date', '-')} · {float(row.get('quantity', 0)):,.4f} units @ {purchase_usd:,.2f} USD</span>
                             </div>
                             <div style="text-align: right;">
-                                <span style="color: #94a3b8;">Güncel: <strong>{current_usd:,.2f} USD</strong></span>
+                                <span style="color: #94a3b8;">Last: <strong>{current_usd:,.2f} USD</strong></span>
                                 <span style="margin-left: 14px; color: {pnl_color}; font-weight: 700;">{_fmt_money(pnl_tl)} TL ({_fmt_pct(row.get('pnl_pct', 0))})</span>
                             </div>
                         </div>
@@ -223,13 +219,13 @@ def render_portfolio_screen():
                     st.warning(f"⚠️ {warn}", icon="⚠️")
                 col_a, col_b = st.columns([5, 1])
                 with col_b:
-                    if st.button("🗑️ Sil", key=f"del_{rid}_{i}"):
+                    if st.button("🗑️ Delete", key=f"del_{rid}_{i}"):
                         ok, err = portfolio_delete(rid, user_id)
                         if ok:
-                            st.success("Kayıt silindi.")
+                            st.success("Record deleted.")
                             st.rerun()
                         else:
-                            st.error(err or "Silinemedi.")
+                            st.error(err or "Could not delete.")
                 st.markdown("---")
 
     _portfolio_content()

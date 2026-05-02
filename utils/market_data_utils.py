@@ -77,7 +77,7 @@ def _apply_sanity_filter(symbol: str, new_price_usd: Optional[float]) -> Optiona
 
     # Mutlak akıl sınırları (USD)
     if p < 0.000001 or p > 1_000_000_000:
-        _LAST_PRICE_WARNING[sym] = "Fiyat anormal göründüğü için son güvenli fiyat korundu."
+        _LAST_PRICE_WARNING[sym] = "Price looked abnormal; last safe quote was kept."
         return prev
 
     rel = abs(p - prev) / prev if prev else 0.0
@@ -87,11 +87,11 @@ def _apply_sanity_filter(symbol: str, new_price_usd: Optional[float]) -> Optiona
 
     # 5x üzeri veya 5x altı gibi “çarpan hatası” yakalama (örn. TRY/USD karışması)
     if p > prev * 5 or p < prev / 5:
-        _LAST_PRICE_WARNING[sym] = "Gerçek dışı sıçrama tespit edildi; son güvenli fiyat korundu."
+        _LAST_PRICE_WARNING[sym] = "Unrealistic jump detected; last safe quote was kept."
         return prev
 
     if rel > max_rel:
-        _LAST_PRICE_WARNING[sym] = "Aşırı fiyat değişimi tespit edildi; son güvenli fiyat korundu."
+        _LAST_PRICE_WARNING[sym] = "Extreme price move detected; last safe quote was kept."
         return prev
 
     _LAST_GOOD_PRICE_USD[sym] = p

@@ -74,7 +74,7 @@ st.markdown("""
         height: 24px !important;
     }
 
-    /* Sidebar menü hizası */
+    /* Sidebar menu alignment */
     [data-testid="stSidebar"] [role="radiogroup"] label {
         padding-left: 0.5rem !important;
         align-items: center !important;
@@ -193,17 +193,17 @@ def render_sidebar():
     if st.session_state.user:
         st.sidebar.markdown(f"""
             <div style="background: rgba(59, 130, 246, 0.05); padding: 1.5rem; border-radius: 20px; border: 1px solid rgba(59, 130, 246, 0.1); margin-bottom: 2.5rem;">
-                <p style="color: #94a3b8; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Bağlı Hesap</p>
+                <p style="color: #94a3b8; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Connected account</p>
                 <p style="color: white; font-weight: 700; margin: 0; font-size: 1.1rem; word-break: break-all;">{st.session_state.user['email']}</p>
             </div>
             """, unsafe_allow_html=True)
         
         # Fixed Emoji usage for professional look
-        menu = ["🏛️ Dashboard", "💼 Portföyüm", "📅 Temettü Takvimi", "🧠 AI Analiz Merkezi", "🛡️ Güvenlik & Profil"]
-        choice = st.sidebar.radio("Navigasyon", menu, index=0, label_visibility="collapsed")
+        menu = ["🏛️ Dashboard", "💼 My Portfolio", "📅 Dividend Calendar", "🧠 AI Analysis Hub", "🛡️ Security & Profile"]
+        choice = st.sidebar.radio("Navigation", menu, index=0, label_visibility="collapsed")
         
         st.sidebar.markdown("<br><br>", unsafe_allow_html=True)
-        if st.sidebar.button("🔓 Güvenli Çıkış", key="logout_btn", use_container_width=True):
+        if st.sidebar.button("🔓 Sign out securely", key="logout_btn", use_container_width=True):
             st.session_state.user = None
             st.session_state.onboarding_complete = False
             st.rerun()
@@ -220,16 +220,16 @@ def auth_screen():
         st.markdown("""
             <div style="padding-top: 50px; padding-left: 20px;">
                 <h1 style="font-size: 5rem; font-weight: 800; line-height: 1; margin-bottom: 1.5rem; color: white;">
-                    Finansal <br>
-                    <span style="background: linear-gradient(90deg, #3b82f6, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Geleceğinizi</span> <br>
-                    Yönetin.
+                    Shape your <br>
+                    <span style="background: linear-gradient(90deg, #3b82f6, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">financial</span> <br>
+                    future.
                 </h1>
                 <p style="color: #94a3b8; font-size: 1.4rem; margin-bottom: 3rem; max-width: 85%; font-weight: 400; line-height: 1.6;">
-                    Yapay zeka katmanlı varlık yönetimi ile verilerinizi stratejik birer avantaja dönüştürün. Standartların ötesinde bir deneyim sizi bekliyor.
+                    Turn your data into a strategic edge with AI-layered wealth management. A premium experience beyond the ordinary awaits you.
                 </p>
                 <div style="display: flex; gap: 25px;">
-                    <div style="background: rgba(59, 130, 246, 0.1); padding: 15px 30px; border-radius: 40px; color: #3b82f6; font-weight: 700; border: 1px solid rgba(59, 130, 246, 0.2); font-size: 0.9rem;">💎 +10K Yatırımcı</div>
-                    <div style="background: rgba(255, 255, 255, 0.05); padding: 15px 30px; border-radius: 40px; color: #e2e8f0; font-weight: 700; border: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.9rem;">🔒 Banka Düzeyi Koruma</div>
+                    <div style="background: rgba(59, 130, 246, 0.1); padding: 15px 30px; border-radius: 40px; color: #3b82f6; font-weight: 700; border: 1px solid rgba(59, 130, 246, 0.2); font-size: 0.9rem;">💎 +10K investors</div>
+                    <div style="background: rgba(255, 255, 255, 0.05); padding: 15px 30px; border-radius: 40px; color: #e2e8f0; font-weight: 700; border: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.9rem;">🔒 Bank-grade security</div>
                 </div>
             </div>
         """, unsafe_allow_html=True)
@@ -243,12 +243,12 @@ def auth_screen():
             # KEY IN DIV FORCES ANIMATION RE-RUN
             st.markdown(f'<div class="animate-forward" key="auth_block_{mode}">', unsafe_allow_html=True)
             if mode == "login":
-                st.markdown("<h2 style='text-align: center; margin-bottom: 5px; font-weight: 800; font-size: 2.2rem;'>Giriş Yap</h2>", unsafe_allow_html=True)
-                st.markdown("<p style='text-align: center; color: #64748b; font-size: 1rem; margin-bottom: 40px;'>FinTrack evrenine hoş geldiniz</p>", unsafe_allow_html=True)
+                st.markdown("<h2 style='text-align: center; margin-bottom: 5px; font-weight: 800; font-size: 2.2rem;'>Sign in</h2>", unsafe_allow_html=True)
+                st.markdown("<p style='text-align: center; color: #64748b; font-size: 1rem; margin-bottom: 40px;'>Welcome to the FinTrack universe</p>", unsafe_allow_html=True)
                 with st.form("login_form_v3"):
-                    email = st.text_input("Kurumsal E-posta", placeholder="investor@fintrack.ai")
-                    password = st.text_input("Gizli Şifre", type="password", placeholder="••••••••")
-                    if st.form_submit_button("Sisteme Eriş", use_container_width=True):
+                    email = st.text_input("Email", placeholder="investor@fintrack.ai")
+                    password = st.text_input("Password", type="password", placeholder="••••••••")
+                    if st.form_submit_button("Access platform", use_container_width=True):
                         if email and password:
                             res = sign_in(email, password)
                             if isinstance(res, str): st.error(f"❌ {res}")
@@ -258,19 +258,19 @@ def auth_screen():
                                 st.session_state.onboarding_complete = check_onboarding_status(res.user.id)
                                 st.rerun()
                 st.markdown("<br>", unsafe_allow_html=True)
-                if st.button("Henüz hesabınız yok mu? Hemen Katılın ✨", key="to_reg", use_container_width=True):
+                if st.button("No account yet? Join now ✨", key="to_reg", use_container_width=True):
                     st.session_state.auth_mode = "register"
                     st.rerun()
             else:
-                st.markdown("<h2 style='text-align: center; margin-bottom: 5px; font-weight: 800; font-size: 2.2rem;'>Yeni Hesap</h2>", unsafe_allow_html=True)
-                st.markdown("<p style='text-align: center; color: #64748b; font-size: 1rem; margin-bottom: 40px;'>Sınırlarınızı bugün genişletin</p>", unsafe_allow_html=True)
+                st.markdown("<h2 style='text-align: center; margin-bottom: 5px; font-weight: 800; font-size: 2.2rem;'>Create account</h2>", unsafe_allow_html=True)
+                st.markdown("<p style='text-align: center; color: #64748b; font-size: 1rem; margin-bottom: 40px;'>Expand your horizons today</p>", unsafe_allow_html=True)
                 with st.form("register_form_v3"):
-                    email = st.text_input("E-posta Adresi", placeholder="investor@fintrack.ai")
-                    password = st.text_input("Güçlü Şifre", type="password", placeholder="••••••••")
-                    confirm = st.text_input("Şifre Tekrar", type="password", placeholder="••••••••")
-                    if st.form_submit_button("Üyeliği Başlat", use_container_width=True):
-                        if password != confirm: st.error("❌ Şifreler uyuşmuyor.")
-                        elif len(password) < 6: st.error("❌ Şifre güvenliği yetersiz.")
+                    email = st.text_input("Email address", placeholder="investor@fintrack.ai")
+                    password = st.text_input("Password", type="password", placeholder="••••••••")
+                    confirm = st.text_input("Confirm password", type="password", placeholder="••••••••")
+                    if st.form_submit_button("Start membership", use_container_width=True):
+                        if password != confirm: st.error("❌ Passwords do not match.")
+                        elif len(password) < 6: st.error("❌ Password is too weak (min. 6 characters).")
                         else:
                             res = sign_up(email, password)
                             if isinstance(res, str): st.error(f"❌ {res}")
@@ -280,9 +280,9 @@ def auth_screen():
                                     # Newly signed up users haven't completed onboarding
                                     st.session_state.onboarding_complete = False
                                     st.rerun()
-                                else: st.info("ℹ️ Kayıt Başarılı! E-postanızı onaylayın.")
+                                else: st.info("ℹ️ Sign-up successful! Please confirm your email.")
                 st.markdown("<br>", unsafe_allow_html=True)
-                if st.button("Zaten üye misiniz? Giriş Yapın 🏮", key="to_log", use_container_width=True):
+                if st.button("Already a member? Sign in 🏮", key="to_log", use_container_width=True):
                     st.session_state.auth_mode = "login"
                     st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
@@ -290,8 +290,8 @@ def auth_screen():
 def render_dashboard():
     st.markdown("""
         <div class="animate-page" style="background: rgba(15, 23, 42, 0.4); border-radius: 30px; padding: 40px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 2.5rem; backdrop-filter: blur(20px);">
-            <h1 style="font-size: 3.5rem; margin-bottom: 0.5rem; font-weight: 800; letter-spacing: -1px;">🏠 Finansal Kokpit</h1>
-            <p style="color: #94a3b8; font-size: 1.2rem; font-weight: 400;">Akıllı varlık yönetimi ve anlık veri analizi bir arada.</p>
+            <h1 style="font-size: 3.5rem; margin-bottom: 0.5rem; font-weight: 800; letter-spacing: -1px;">🏠 Financial cockpit</h1>
+            <p style="color: #94a3b8; font-size: 1.2rem; font-weight: 400;">Smart wealth management and live data analysis in one place.</p>
         </div>
         """, unsafe_allow_html=True)
     col1, col2, col3 = st.columns(3)
@@ -303,9 +303,9 @@ def render_dashboard():
         <p style="color: {sub_color}; font-size: 1rem; font-weight: 600; margin-bottom: 0;">{sub}</p>
     </div>
     """
-    with col1: st.markdown(metric_css.format(title="📊 Net Portföy", value="0.00 TL", val_color="white", sub="⚖️ Veri İsteniyor", sub_color="#64748b"), unsafe_allow_html=True)
-    with col2: st.markdown(metric_css.format(title="🚀 Günlük Verim", value="+0.00 TL", val_color="#10b981", sub="📈 +%0.00", sub_color="#10b981"), unsafe_allow_html=True)
-    with col3: st.markdown(metric_css.format(title="💎 Varlık Havuzu", value="0", val_color="white", sub="💼 Çeşitlilik Bekleniyor", sub_color="#64748b"), unsafe_allow_html=True)
+    with col1: st.markdown(metric_css.format(title="📊 Net portfolio", value="0.00 TL", val_color="white", sub="⚖️ Awaiting data", sub_color="#64748b"), unsafe_allow_html=True)
+    with col2: st.markdown(metric_css.format(title="🚀 Daily return", value="+0.00 TL", val_color="#10b981", sub="📈 +%0.00", sub_color="#10b981"), unsafe_allow_html=True)
+    with col3: st.markdown(metric_css.format(title="💎 Asset pool", value="0", val_color="white", sub="💼 Awaiting diversification", sub_color="#64748b"), unsafe_allow_html=True)
 
 def main():
     if st.session_state.user:
@@ -316,16 +316,16 @@ def main():
         else:
             choice = render_sidebar()
             if choice == "🏛️ Dashboard": render_dashboard()
-            elif choice == "💼 Portföyüm":
+            elif choice == "💼 My Portfolio":
                 render_portfolio_screen()
-            elif choice == "🛡️ Güvenlik & Profil":
-                st.markdown("<h1 class='animate-page'>🛡️ Güvenlik & Profil</h1>", unsafe_allow_html=True)
+            elif choice == "🛡️ Security & Profile":
+                st.markdown("<h1 class='animate-page'>🛡️ Security & Profile</h1>", unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
-                with st.expander("📝 Yatırımcı Karakterinizi Güncelleyin", expanded=True):
+                with st.expander("📝 Update your investor profile", expanded=True):
                     risk_onboarding()
             else:
                 st.header(choice)
-                st.write("Modül hazırlık aşamasında.")
+                st.write("This module is coming soon.")
     else:
         auth_screen()
 

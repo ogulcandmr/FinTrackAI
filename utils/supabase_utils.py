@@ -20,30 +20,30 @@ def is_valid_email(email):
 
 def sign_in(email, password):
     if not is_valid_email(email):
-        return "Geçersiz e-posta formatı."
+        return "Invalid email format."
     try:
         supabase = get_supabase_client()
-        if not supabase: return "Bağlantı kurulamadı."
+        if not supabase: return "Could not connect."
         response = supabase.auth.sign_in_with_password({"email": email, "password": password})
         return response
     except Exception as e:
         err_msg = str(e)
         if "Invalid login credentials" in err_msg:
-            return "Hatalı e-posta veya şifre."
+            return "Invalid email or password."
         return err_msg
 
 def sign_up(email, password):
     if not is_valid_email(email):
-        return "Geçersiz e-posta formatı."
+        return "Invalid email format."
     try:
         supabase = get_supabase_client()
-        if not supabase: return "Bağlantı kurulamadı."
+        if not supabase: return "Could not connect."
         response = supabase.auth.sign_up({"email": email, "password": password})
         return response
     except Exception as e:
         err_msg = str(e)
         if "User already registered" in err_msg:
-            return "Bu e-posta adresi zaten kayıtlı."
+            return "This email is already registered."
         return err_msg
 
 def check_onboarding_status(user_id):
