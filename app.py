@@ -164,6 +164,14 @@ st.markdown("""
         background: rgba(255, 255, 255, 0.08) !important;
     }
 
+    /* Fix Widget Label Colors */
+    .stApp label p, .stApp div[data-testid="stWidgetLabel"] p, .stApp label {
+        color: #f8fafc !important;
+        font-weight: 600 !important;
+        font-size: 1.05rem !important;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
+    }
+
     .stButton > button {
         background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
         border-radius: 18px !important;
@@ -199,7 +207,7 @@ def render_sidebar():
             """, unsafe_allow_html=True)
         
         # Fixed Emoji usage for professional look
-        menu = ["🏛️ Dashboard", "💼 Portföyüm", "📅 Temettü Emekliliği Motoru", "🧠 AI Analiz Merkezi", "🛡️ Güvenlik & Profil"]
+        menu = ["🏛️ Dashboard", "💼 Portföyüm", "📅 Dividend Retirement Engine", "🧠 AI Analiz Merkezi", "🛡️ Güvenlik & Profil"]
         choice = st.sidebar.radio("Navigasyon", menu, index=0, label_visibility="collapsed")
         
         st.sidebar.markdown("<br><br>", unsafe_allow_html=True)
@@ -318,7 +326,7 @@ def main():
             if choice == "🏛️ Dashboard": render_dashboard()
             elif choice == "💼 Portföyüm":
                 render_portfolio_screen()
-            elif choice == "📅 Temettü Emekliliği Motoru":
+            elif choice == "📅 Dividend Retirement Engine":
                 render_dividend_screen()
             elif choice == "🛡️ Güvenlik & Profil":
                 st.markdown("<h1 class='animate-page'>🛡️ Güvenlik & Profil</h1>", unsafe_allow_html=True)
