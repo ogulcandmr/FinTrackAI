@@ -1,6 +1,19 @@
+<<<<<<< HEAD
 yfinance>=0.2.31
 requests>=2.31.0
 textblob>=0.17.1
 prophet>=1.1.5
 supabase>=2.0.0
 python-dotenv>=1.0.0
+=======
+streamlit
+supabase
+python-dotenv
+yfinance
+plotly
+pandas
+numpy
+requests
+textblob
+prophet
+>>>>>>> main

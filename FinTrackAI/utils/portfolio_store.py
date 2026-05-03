@@ -1,5 +1,5 @@
-# FinTrackAI - Yerel portföy deposu (SQLite)
-# Supabase şemasına ihtiyaç duymadan çalışır; varlık/hisse kaydı ve canlı durum takibi için.
+# FinTrackAI - Local portfolio store (SQLite)
+# Runs without a Supabase schema; for asset/stock records and live status tracking.
 
 import os
 import sqlite3
@@ -41,7 +41,7 @@ def _init_db():
 
 
 def insert(user_id: str, asset_id: str, purchase_date: str, price: float, quantity: float) -> Tuple[Optional[Dict], Optional[str]]:
-    """Portföye pozisyon ekler. purchase_date: 'YYYY-MM-DD' veya date objesi string."""
+    """Adds a position to the portfolio. purchase_date: 'YYYY-MM-DD' or date as string."""
     _init_db()
     try:
         conn = _get_conn()
@@ -62,7 +62,7 @@ def insert(user_id: str, asset_id: str, purchase_date: str, price: float, quanti
 
 
 def select_by_user(user_id: str) -> List[Dict[str, Any]]:
-    """Kullanıcının tüm portföy kayıtlarını getirir."""
+    """Returns all portfolio records for the user."""
     _init_db()
     try:
         conn = _get_conn()
@@ -73,12 +73,12 @@ def select_by_user(user_id: str) -> List[Dict[str, Any]]:
         conn.close()
         return [dict(r) for r in rows]
     except Exception as e:
-        print(f"Portföy listesi hatası (yerel): {e}")
+        print(f"Portfolio list error (local): {e}")
         return []
 
 
 def delete(record_id: str, user_id: str) -> Tuple[bool, Optional[str]]:
-    """Belirtilen kaydı siler (sadece ilgili kullanıcı)."""
+    """Deletes the given record (only for the matching user)."""
     _init_db()
     try:
         conn = _get_conn()

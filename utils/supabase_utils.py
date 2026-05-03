@@ -2,7 +2,7 @@ import re
 from supabase import create_client, Client
 import streamlit as st
 
-# Supabase URL ve Key bilgileri .streamlit/secrets.toml dosyasından çekilir
+# Supabase URL and Key are loaded from .streamlit/secrets.toml
 url = st.secrets.get("SUPABASE_URL", "")
 key = st.secrets.get("SUPABASE_KEY", "")
 
@@ -10,10 +10,10 @@ def get_supabase_client() -> Client:
     if not url or not key:
         return None
     try:
-        # Client'ı her seferinde baştan yaratıyoruz (Server disconnected hatasını önlemek için)
+        # Create client fresh each time (to prevent Server disconnected errors)
         client = create_client(url, key)
         
-        # Eğer daha önce giriş yapıldıysa, auth token'ı yeni client'a aktarıyoruz (RLS'yi geçmek için)
+        # If previously logged in, transfer auth token to new client (to pass RLS)
         if 'supabase_session' in st.session_state and st.session_state.supabase_session:
             try:
                 client.auth.set_session(
@@ -34,10 +34,10 @@ def is_valid_email(email):
 
 def sign_in(email, password):
     if not is_valid_email(email):
-        return "Geçersiz e-posta formatı."
+        return "Invalid email format."
     try:
         supabase = get_supabase_client()
-        if not supabase: return "Bağlantı kurulamadı."
+        if not supabase: return "Could not establish connection."
         response = supabase.auth.sign_in_with_password({"email": email, "password": password})
         if response.session:
             st.session_state.supabase_session = {
@@ -48,15 +48,15 @@ def sign_in(email, password):
     except Exception as e:
         err_msg = str(e)
         if "Invalid login credentials" in err_msg:
-            return "Hatalı e-posta veya şifre."
+            return "Incorrect email or password."
         return err_msg
 
 def sign_up(email, password):
     if not is_valid_email(email):
-        return "Geçersiz e-posta formatı."
+        return "Invalid email format."
     try:
         supabase = get_supabase_client()
-        if not supabase: return "Bağlantı kurulamadı."
+        if not supabase: return "Could not establish connection."
         response = supabase.auth.sign_up({"email": email, "password": password})
         if response.session:
             st.session_state.supabase_session = {
@@ -67,7 +67,7 @@ def sign_up(email, password):
     except Exception as e:
         err_msg = str(e)
         if "User already registered" in err_msg:
-            return "Bu e-posta adresi zaten kayıtlı."
+            return "This email address is already registered."
         return err_msg
 
 def check_onboarding_status(user_id):
@@ -75,13 +75,13 @@ def check_onboarding_status(user_id):
         supabase = get_supabase_client()
         if not supabase: return False
         
-        # Kullanıcının profiles tablosunu okuyoruz
+        # Read the user's profiles table
         response = supabase.table("profiles").select("onboarding_complete").eq("id", user_id).execute()
         if response.data and len(response.data) > 0:
             return response.data[0].get("onboarding_complete", False)
         return False
     except Exception as e:
-        print(f"Onboarding durum kontrol hatası: {e}")
+        print(f"Onboarding status check error: {e}")
         return False
 
 def get_onboarding_data(user_id):
@@ -93,7 +93,7 @@ def get_onboarding_data(user_id):
             return response.data[0]
         return None
     except Exception as e:
-        print(f"Onboarding verisi cekme hatasi: {e}")
+        print(f"Onboarding data fetch error: {e}")
         return None
 
 def save_onboarding_data(user_id, profile_data):
@@ -101,7 +101,7 @@ def save_onboarding_data(user_id, profile_data):
         supabase = get_supabase_client()
         if not supabase: return False
         
-        # Veritabanı "profiles" tablosuna kullanıcının anketini kaydeder.
+        # Save user's survey to the "profiles" table in the database.
         payload = {
             "id": user_id,
             "onboarding_complete": True,
@@ -111,21 +111,21 @@ def save_onboarding_data(user_id, profile_data):
             "objective": profile_data.get("objective")
         }
         
-        # Daha güvenli upsert:
+        # Safer upsert:
         res = supabase.table("profiles").upsert(payload).execute()
         return True
     except Exception as e:
-        print(f"Onboarding kaydetme hatası: {e}")
+        print(f"Onboarding save error: {e}")
         return False
 
-# --- PORTFÖY (Veri Katmanı ve Cüzdan Yönetimi) ---
-# Yerel SQLite kullanılır; Supabase portfolio şeması zorunlu değildir. Kayıt anında çalışır, canlı fiyat yfinance/ccxt ile gelir.
+# --- PORTFOLIO (Data Layer and Wallet Management) ---
+# Local SQLite is used; Supabase portfolio schema is not required. Works at record time, live price comes from yfinance/ccxt.
 
 from utils.portfolio_store import insert as _local_insert, select_by_user as _local_select, delete as _local_delete
 
 
 def portfolio_insert(user_id, asset_id, purchase_date, price, quantity):
-    """Portföye yeni pozisyon ekler. Yerel SQLite'a kaydeder."""
+    """Adds a new position to the portfolio. Saves to local SQLite."""
     value = str(asset_id).strip().upper()
     date_str = str(purchase_date)[:10] if purchase_date else ""
     row, err = _local_insert(user_id, value, date_str, float(price), float(quantity))
@@ -135,12 +135,12 @@ def portfolio_insert(user_id, asset_id, purchase_date, price, quantity):
 
 
 def portfolio_select_by_user(user_id):
-    """Kullanıcının tüm portföy kayıtlarını getirir (yerel depodan)."""
+    """Returns all portfolio records for the user (from local store)."""
     return _local_select(user_id)
 
 
 def portfolio_delete(record_id, user_id):
-    """Belirtilen portföy kaydını siler."""
+    """Deletes the specified portfolio record."""
     ok, err = _local_delete(record_id, user_id)
     if err:
         return False, err

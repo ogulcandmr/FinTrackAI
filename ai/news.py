@@ -12,7 +12,11 @@ from typing import List
 
 import requests
 
+<<<<<<< HEAD
 from config import settings
+=======
+from ai.config import settings
+>>>>>>> main
 
 logger = logging.getLogger(__name__)
 

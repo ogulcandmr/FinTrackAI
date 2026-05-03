@@ -30,11 +30,19 @@ from typing import Any, Dict, List, Optional
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
+<<<<<<< HEAD
 from config import settings
 from news import fetch_news
 from sentiment import analyze_sentiment
 from forecast import run_forecast
 from db import insert_sentiment_batch, fetch_sentiments
+=======
+from ai.config import settings
+from ai.news import fetch_news
+from ai.sentiment import analyze_sentiment
+from ai.forecast import run_forecast
+from ai.db import insert_sentiment_batch, fetch_sentiments
+>>>>>>> main
 
 # ---------------------------------------------------------------------------
 # Logging

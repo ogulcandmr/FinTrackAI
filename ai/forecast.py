@@ -23,7 +23,11 @@ import pandas as pd
 import yfinance as yf
 from prophet import Prophet
 
+<<<<<<< HEAD
 from config import settings
+=======
+from ai.config import settings
+>>>>>>> main
 
 logger = logging.getLogger(__name__)
 

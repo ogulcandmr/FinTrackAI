@@ -1,5 +1,5 @@
-# FinTrackAI - İnternetten canlı fiyat: tüm alternatif yollar denenir
-# 1) Yahoo Chart API (doğrudan HTTP) 2) yfinance 3) ccxt 4) Yahoo -USD/.IS 5) Finnhub (opsiyonel)
+# FinTrackAI - Live price from the web; all fallback paths are tried
+# 1) Yahoo Chart API (direct HTTP) 2) yfinance 3) ccxt 4) Yahoo -USD/.IS 5) Finnhub (optional)
 
 from typing import Optional, Tuple
 import logging
@@ -9,17 +9,17 @@ import urllib.error
 
 logger = logging.getLogger(__name__)
 
-# Tarayıcı benzeri User-Agent (Yahoo bazen bot isteklerini engeller)
+# Browser-like User-Agent (Yahoo sometimes blocks bot requests)
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
-# TRY->USD için sabit kur (1 USD = 44 TL)
+# Fixed TRY->USD rate (1 USD = 44 TRY)
 USD_TO_TRY = 44.0
 
-# Son güvenli fiyat cache (process bazlı)
+# Last good price cache (per process)
 _LAST_GOOD_PRICE_USD = {}  # symbol -> float
 _LAST_PRICE_WARNING = {}   # symbol -> str
 
-# Yaygın kripto kısaltmaları (BTC yazınca 30$ gibi yanlış enstrüman gelmesini önlemek için)
+# Common crypto tickers (avoid wrong instruments when e.g. "BTC" maps to a cheap stock)
 COMMON_CRYPTO = {
     "BTC", "ETH", "BNB", "SOL", "XRP", "ADA", "DOGE", "DOT", "MATIC", "AVAX",
     "LTC", "LINK", "ATOM", "BCH", "TRX", "ETC", "XLM", "NEAR", "FIL", "APT",
@@ -33,30 +33,30 @@ def _looks_like_crypto_symbol(sym: str) -> bool:
         return False
     if "/" in s:
         return True
-    # BTC, ETH gibi bilinen kısaltmalar
+    # Known tickers like BTC, ETH
     if s in COMMON_CRYPTO:
         return True
     return False
 
 
 def get_last_price_warning(symbol: str) -> Optional[str]:
-    """Son fiyat çekiminde anormallik filtresi devreye girdiyse mesaj döner."""
+    """Returns a message if the anomaly filter fired on the last price fetch."""
     if not symbol:
         return None
     return _LAST_PRICE_WARNING.get(str(symbol).strip().upper())
 
 
 def clear_price_cache():
-    """Son güvenli fiyat cache'ini sıfırlar (yanlış fiyat yakalandıysa toparlamak için)."""
+    """Clears the last-good price cache (recover after a bad price)."""
     _LAST_GOOD_PRICE_USD.clear()
     _LAST_PRICE_WARNING.clear()
 
 
 def _apply_sanity_filter(symbol: str, new_price_usd: Optional[float]) -> Optional[float]:
     """
-    Hatalı kaynak/para birimi vb. durumlarda oluşan gerçek dışı sıçramaları engeller.
-    - Kripto: daha volatil → daha geniş tolerans
-    - Hisse: daha dar tolerans
+    Blocks unrealistic jumps from bad source/currency mix-ups.
+    - Crypto: more volatile → wider tolerance
+    - Stocks: tighter tolerance
     """
     sym = str(symbol or "").strip().upper()
     if new_price_usd is None:
@@ -65,33 +65,33 @@ def _apply_sanity_filter(symbol: str, new_price_usd: Optional[float]) -> Optiona
         p = float(new_price_usd)
     except Exception:
         return None
-    if p <= 0 or p != p:  # NaN kontrolü
+    if p <= 0 or p != p:  # NaN check
         return None
 
     prev = _LAST_GOOD_PRICE_USD.get(sym)
-    # İlk ölçüm: direkt kabul
+    # First reading: accept as-is
     if prev is None or prev <= 0:
         _LAST_GOOD_PRICE_USD[sym] = p
         _LAST_PRICE_WARNING.pop(sym, None)
         return p
 
-    # Mutlak akıl sınırları (USD)
+    # Absolute sanity bounds (USD)
     if p < 0.000001 or p > 1_000_000_000:
-        _LAST_PRICE_WARNING[sym] = "Fiyat anormal göründüğü için son güvenli fiyat korundu."
+        _LAST_PRICE_WARNING[sym] = "Price looked abnormal; kept last known good price."
         return prev
 
     rel = abs(p - prev) / prev if prev else 0.0
     is_crypto = _looks_like_crypto_symbol(sym)
-    # 2 dakikalık yenilemede gerçek dışı sıçrama eşiği
-    max_rel = 1.00 if is_crypto else 0.50   # kripto %100, hisse %50
+    # ~2-minute refresh unrealistic jump threshold
+    max_rel = 1.00 if is_crypto else 0.50   # crypto 100%, stock 50%
 
-    # 5x üzeri veya 5x altı gibi “çarpan hatası” yakalama (örn. TRY/USD karışması)
+    # Catch ~5x scale errors (e.g. TRY/USD confusion)
     if p > prev * 5 or p < prev / 5:
-        _LAST_PRICE_WARNING[sym] = "Gerçek dışı sıçrama tespit edildi; son güvenli fiyat korundu."
+        _LAST_PRICE_WARNING[sym] = "Unrealistic jump detected; kept last known good price."
         return prev
 
     if rel > max_rel:
-        _LAST_PRICE_WARNING[sym] = "Aşırı fiyat değişimi tespit edildi; son güvenli fiyat korundu."
+        _LAST_PRICE_WARNING[sym] = "Excessive price change detected; kept last known good price."
         return prev
 
     _LAST_GOOD_PRICE_USD[sym] = p
@@ -101,8 +101,8 @@ def _apply_sanity_filter(symbol: str, new_price_usd: Optional[float]) -> Optiona
 
 def _convert_price_to_usd(price: float, currency: Optional[str]) -> float:
     """
-    Veri kaynağı TRY döndürüyorsa USD'ye çevirir.
-    Bu projede kur sabiti: 1 USD = 44 TL.
+    Converts to USD when the data source returns TRY.
+    Fixed rate in this project: 1 USD = 44 TRY.
     """
     cur = (currency or "").upper().strip()
     if cur == "TRY":
@@ -112,8 +112,8 @@ def _convert_price_to_usd(price: float, currency: Optional[str]) -> float:
 
 def _fetch_yahoo_chart_api(symbol: str) -> Tuple[Optional[float], Optional[str]]:
     """
-    Yahoo'nun doğrudan chart API'si (query1.finance.yahoo.com).
-    yfinance'tan bağımsız; tarayıcının kullandığı aynı kaynak.
+    Yahoo chart API directly (query1.finance.yahoo.com).
+    Independent of yfinance; same source the browser uses.
     """
     symbol = str(symbol).strip().upper()
     if not symbol:
@@ -124,7 +124,7 @@ def _fetch_yahoo_chart_api(symbol: str) -> Tuple[Optional[float], Optional[str]]
         with urllib.request.urlopen(req, timeout=12) as resp:
             raw = resp.read().decode()
         if not raw.strip().startswith("{"):
-            logger.debug("Yahoo Chart API %s: JSON değil", symbol)
+            logger.debug("Yahoo Chart API %s: not JSON", symbol)
             return None, None
         data = json.loads(raw)
     except (urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError, OSError) as e:
@@ -139,7 +139,7 @@ def _fetch_yahoo_chart_api(symbol: str) -> Tuple[Optional[float], Optional[str]]
         price = meta.get("regularMarketPrice")
         if price is not None:
             return float(price), currency
-        # Son kapanış
+        # Last close
         quotes = result[0].get("indicators", {}).get("quote", [{}])
         if quotes and quotes[0].get("close"):
             closes = [c for c in quotes[0]["close"] if c is not None]
@@ -151,14 +151,14 @@ def _fetch_yahoo_chart_api(symbol: str) -> Tuple[Optional[float], Optional[str]]
 
 
 def _fetch_yf(symbol: str) -> Tuple[Optional[float], Optional[str]]:
-    """yfinance: önce history (daha güvenilir), sonra info."""
+    """yfinance: try history first (more reliable), then info."""
     try:
         import yfinance as yf
         t = yf.Ticker(symbol)
         for period in ("1d", "5d"):
             hist = t.history(period=period)
             if hist is not None and not hist.empty and "Close" in hist.columns:
-                # currency çoğu zaman info'da
+                # currency is usually on info
                 info = getattr(t, "info", None) or {}
                 currency = info.get("currency") if isinstance(info, dict) else None
                 return float(hist["Close"].iloc[-1]), currency
@@ -191,7 +191,7 @@ def _fetch_ccxt(symbol: str) -> Optional[float]:
 
 
 def _fetch_finnhub(symbol: str) -> Optional[float]:
-    """Finnhub Quote API (ücretsiz tier). FINNHUB_API_KEY .streamlit/secrets.toml veya env'de."""
+    """Finnhub Quote API (free tier). FINNHUB_API_KEY in .streamlit/secrets.toml or env."""
     try:
         import os
         key = os.environ.get("FINNHUB_API_KEY", "")
@@ -218,22 +218,22 @@ def _fetch_finnhub(symbol: str) -> Optional[float]:
 
 def _get_current_price_raw(symbol: str) -> Optional[float]:
     """
-    Yazılan sembol için internetten fiyat (USD) çeker.
-    Sıra: 1) Yahoo Chart API 2) yfinance 3) Yahoo -USD/.IS 4) ccxt 5) Finnhub (key varsa).
+    Fetches price (USD) from the web for the given symbol.
+    Order: 1) Yahoo Chart API 2) yfinance 3) Yahoo -USD/.IS 4) ccxt 5) Finnhub (if key set).
     """
     if not symbol or not str(symbol).strip():
         return None
     raw = str(symbol).strip()
     sym_upper = raw.upper()
 
-    # Kriptoda (BTC, ETH, BTC/USDT) öncelik: ccxt veya BTC-USD (Yahoo),
-    # çünkü 'BTC' gibi semboller Yahoo'da yanlış enstrümana denk gelebiliyor.
+    # Crypto (BTC, ETH, BTC/USDT): prefer ccxt or BTC-USD on Yahoo,
+    # because plain "BTC" can resolve to the wrong Yahoo instrument.
     if _looks_like_crypto_symbol(sym_upper):
         p = _fetch_ccxt(sym_upper)
         if p is not None and p > 0:
             return p
 
-    # Hisse: önce düz sembol (AAPL, TTWO, ASELS), sonra TR .IS. Kripto: -USD ve düz.
+    # Stock: plain symbol first (AAPL, TTWO, ASELS), then TR .IS. Crypto: -USD and plain.
     if _looks_like_crypto_symbol(sym_upper):
         variants = [sym_upper + "-USD", sym_upper]
     else:
@@ -241,7 +241,7 @@ def _get_current_price_raw(symbol: str) -> Optional[float]:
         if len(sym_upper) <= 6 and "." not in sym_upper:
             variants.append(sym_upper + ".IS")
 
-    # 1) Yahoo Chart API (doğrudan HTTP) — hisseler doğru kaynaktan
+    # 1) Yahoo Chart API (direct HTTP) — stocks from the right source
     for sym in variants:
         p, cur = _fetch_yahoo_chart_api(sym)
         if p is not None and p > 0:
@@ -253,12 +253,12 @@ def _get_current_price_raw(symbol: str) -> Optional[float]:
         if p is not None and p > 0:
             return _convert_price_to_usd(p, cur)
 
-    # 3) Binance (kripto)
+    # 3) Binance (crypto)
     p = _fetch_ccxt(sym_upper)
     if p is not None and p > 0:
         return p
 
-    # 4) Finnhub (API key varsa)
+    # 4) Finnhub (if API key)
     p = _fetch_finnhub(sym_upper)
     if p is not None and p > 0:
         return p
@@ -267,7 +267,7 @@ def _get_current_price_raw(symbol: str) -> Optional[float]:
 
 
 def get_current_price(symbol: str) -> Optional[float]:
-    """Doğrudan doğru kaynaktan fiyat çeker (sanity filter kapalı, her seferinde güncel)."""
+    """Fetches price from the primary sources (sanity filter off; always fresh)."""
     sym = str(symbol or "").strip().upper()
     raw = _get_current_price_raw(sym)
     if raw is not None and raw > 0:
@@ -281,13 +281,13 @@ def _symbol_for_ccxt(symbol: str) -> str:
 
 
 def get_daily_change(symbol: str) -> Tuple[Optional[float], Optional[float]]:
-    """Günlük değişim: (yüzde, mutlak fark USD). Önce Yahoo Chart, sonra yfinance, sonra ccxt."""
+    """Daily change: (percent, absolute USD). Yahoo Chart, then yfinance, then ccxt."""
     if not symbol or not str(symbol).strip():
         return None, None
     symbol = str(symbol).strip().upper()
 
-    # Yahoo Chart API ile son iki gün
-    # Kripto ise önce -USD (BTC-USD) veya ccxt kullanımı daha doğru
+    # Last two days via Yahoo Chart API
+    # For crypto, -USD (BTC-USD) or ccxt is more accurate
     if _looks_like_crypto_symbol(symbol):
         try:
             import ccxt
@@ -376,7 +376,7 @@ def get_daily_change(symbol: str) -> Tuple[Optional[float], Optional[float]]:
 
 
 def get_prices_batch(symbols: list) -> dict:
-    """Birden fazla sembol için internetten fiyat çeker. Key: sembol (upper), Value: fiyat veya None."""
+    """Fetches prices for multiple symbols. Key: symbol (upper), value: price or None."""
     result = {}
     for s in symbols:
         if not s:

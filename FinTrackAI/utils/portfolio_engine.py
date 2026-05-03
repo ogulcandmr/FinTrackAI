@@ -1,18 +1,18 @@
-# FinTrackAI - Portföy canlı veri ve kar/zarar hesaplama motoru
-# Tüm fiyatlar USD; hesaplama TL için 1 USD = 44 TL baz alınır.
+# FinTrackAI - Portfolio live data and P&L engine
+# All prices are USD; TRY figures use 1 USD = 44 TRY.
 
 from typing import List, Dict, Any, Optional
 from utils.market_data_utils import get_prices_batch, get_daily_change, get_last_price_warning, clear_price_cache
 
-# Hesaplama TL üzerinden: 1 USD = 44 TL
+# TRY conversion: 1 USD = 44 TRY
 USD_TO_TRY = 44.0
 
 
 def compute_portfolio_pnl(rows: List[Dict[str, Any]]) -> tuple:
     """
-    Portföy satırları için anlık USD fiyatları çeker; kar/zarar hem USD hem TL (1 USD = 44 TL) hesaplar.
+    Fetches spot USD prices for portfolio rows; computes P&L in both USD and TRY (1 USD = 44 TRY).
 
-    rows: portfolio kayıtları (asset_id, price=USD, quantity)
+    rows: portfolio records (asset_id, price=USD, quantity)
 
     Returns:
         enriched_rows: current_price (USD), cost_basis, current_value, pnl (USD), pnl_pct, pnl_tl, current_value_tl, cost_basis_tl
