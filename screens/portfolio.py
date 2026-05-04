@@ -1,4 +1,5 @@
-# FinTrackAI — Portfolio module (data layer & wallet). Prices in USD; P&L in TRY (1 USD = 44 TRY).
+# FinTrackAI - Part 2: Portfolio (data layer & wallet management)
+# Prices in USD; P/L shown in TRY (1 USD = 44 TRY).
 
 import streamlit as st
 from datetime import date
@@ -6,7 +7,7 @@ from utils.supabase_utils import portfolio_insert, portfolio_select_by_user, por
 from utils.portfolio_engine import compute_portfolio_pnl
 from utils.market_data_utils import get_current_price
 
-# To revert: remove POPULAR_ASSETS and the quick-add form block.
+# [To revert: remove POPULAR_ASSETS and the popular quick-add form block.]
 POPULAR_ASSETS = [
     ("Apple", "AAPL"), ("Microsoft", "MSFT"), ("Google", "GOOGL"), ("Amazon", "AMZN"), ("Nvidia", "NVDA"),
     ("Tesla", "TSLA"), ("Meta", "META"), ("Netflix", "NFLX"), ("Adobe", "ADBE"), ("PayPal", "PYPL"),
@@ -38,7 +39,7 @@ def _fmt_pct(val: float) -> str:
 def render_portfolio_screen():
     user = st.session_state.get("user")
     if not user:
-        st.warning("You must sign in to view your portfolio.")
+        st.warning("Sign in to manage your portfolio.")
         return
 
     user_id = user["id"]
@@ -46,9 +47,10 @@ def render_portfolio_screen():
     if _AUTOREFRESH_AVAILABLE:
         st_autorefresh(interval=2 * 60 * 1000, key="portfolio_autorefresh")
 
+    # Ana başlık
     st.markdown("""
         <div class="animate-page" style="background: rgba(15, 23, 42, 0.4); border-radius: 30px; padding: 40px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 2rem; backdrop-filter: blur(20px);">
-            <h1 style="font-size: 3rem; margin-bottom: 0; font-weight: 800;">💼 Data layer & wallet management</h1>
+            <h1 style="font-size: 3rem; margin-bottom: 0; font-weight: 800;">💼 Data layer &amp; wallet management</h1>
         </div>
         """, unsafe_allow_html=True)
 
@@ -59,7 +61,7 @@ def render_portfolio_screen():
         rows = portfolio_select_by_user(user_id)
         enriched_rows, summary = compute_portfolio_pnl(rows)
 
-        # Summary cards (TRY)
+        # --- Summary cards (TRY) ---
         card_css = """
         <div style="background: rgba(30, 41, 59, 0.5); padding: 28px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(20px);">
             <p style="color: #64748b; font-size: 0.85rem; margin-bottom: 10px; font-weight: 700; text-transform: uppercase;">{title}</p>
@@ -71,9 +73,9 @@ def render_portfolio_screen():
         with col1:
             st.markdown(card_css.format(
                 title="📊 Total value (TRY)",
-                value=f"{summary['total_value_tl']:,.2f} TL",
+                value=f"{summary['total_value_tl']:,.2f} TRY",
                 val_color="white",
-                sub=f"{summary['total_value_usd']:,.2f} USD · Cost basis: {summary['total_cost_tl']:,.2f} TL",
+                sub=f"{summary['total_value_usd']:,.2f} USD · Cost: {summary['total_cost_tl']:,.2f} TRY",
                 sub_color="#94a3b8"
             ), unsafe_allow_html=True)
         with col2:
@@ -82,7 +84,7 @@ def render_portfolio_screen():
             daily_color = "#10b981" if daily_tl >= 0 else "#ef4444"
             st.markdown(card_css.format(
                 title="📈 Daily change (TRY)",
-                value=f"{_fmt_money(daily_tl)} TL",
+                value=f"{_fmt_money(daily_tl)} TRY",
                 val_color=daily_color,
                 sub=_fmt_pct(daily_pct),
                 sub_color=daily_color
@@ -92,8 +94,8 @@ def render_portfolio_screen():
             pnl_pct = summary["total_pnl_pct"]
             pnl_color = "#10b981" if pnl_tl >= 0 else "#ef4444"
             st.markdown(card_css.format(
-                title="💰 Total P&L (TRY)",
-                value=f"{_fmt_money(pnl_tl)} TL",
+                title="💰 Total P/L (TRY)",
+                value=f"{_fmt_money(pnl_tl)} TRY",
                 val_color=pnl_color,
                 sub=_fmt_pct(pnl_pct),
                 sub_color=pnl_color
@@ -101,8 +103,9 @@ def render_portfolio_screen():
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        with st.expander("➕ Add new position", expanded=not enriched_rows):
-            st.markdown("**Popular stocks & crypto (quick add)**")
+        # --- New holding: quick-add popular list + manual entry ---
+        with st.expander("➕ Add new holding", expanded=not enriched_rows):
+            st.markdown("**Popular stocks and crypto**")
             st.markdown("""
                 <style>
                 [data-testid="stForm"] [data-testid="column"] > div { align-items: flex-end !important; }
@@ -119,7 +122,7 @@ def render_portfolio_screen():
                 with qcol3:
                     quick_submit = st.form_submit_button("Quick add")
                 if quick_submit and quick_choice and quick_qty > 0:
-                    # Parse symbol from option label: "Apple (AAPL)" -> AAPL
+                    # Sembolü seçenek metninden çıkar: "Apple (AAPL)" -> AAPL
                     sym = quick_choice.split("(")[-1].rstrip(")")
                     with st.spinner("Fetching price..."):
                         price = get_current_price(sym)
@@ -128,10 +131,10 @@ def render_portfolio_screen():
                         if err:
                             st.error(f"Could not add: {err}")
                         else:
-                            st.success(f"**{sym}** added {quick_qty:,.4f} units (live price: {price:,.2f} USD).")
+                            st.success(f"Added **{sym}** × {quick_qty:,.4f} at live price **{price:,.2f} USD**.")
                             st.rerun()
                     else:
-                        st.error(f"Could not fetch a price for {sym}. Try again after refreshing P&L.")
+                        st.error(f"Could not fetch a price for {sym}. Try again after refreshing P/L.")
                 elif quick_submit and quick_qty <= 0:
                     st.warning("Quantity must be greater than zero.")
 
@@ -141,17 +144,17 @@ def render_portfolio_screen():
                 suggest_symbol = st.text_input("Stock or crypto symbol", key="suggest_sym", placeholder="e.g. AAPL, TTWO, BTC, ETH, XRP, THYAO")
             with r2:
                 st.markdown("<br>", unsafe_allow_html=True)
-                get_price_btn = st.button("🔃 Fetch price (USD)")
+                get_price_btn = st.button("🔃 Get price (USD)")
             if get_price_btn and suggest_symbol:
                 with st.spinner("Fetching price..."):
                     p = get_current_price(suggest_symbol.strip())
                 if p is not None and p > 0:
                     st.session_state["portfolio_suggested_price"] = p
                     st.session_state["portfolio_suggested_symbol"] = suggest_symbol.strip().upper()
-                    st.success(f"**{suggest_symbol.strip().upper()}** live price: **{p:,.2f} USD** — purchase price in the form below was updated.")
+                    st.success(f"**{suggest_symbol.strip().upper()}** live price: **{p:,.2f} USD** — the purchase price field below was updated.")
                     st.rerun()
                 else:
-                    st.error("Could not fetch a price for this symbol. Check the symbol and try again (e.g. AAPL, TTWO, BTC, ETH).")
+                    st.error("Could not fetch a price for this symbol. Check the ticker and try again (e.g. AAPL, TTWO, BTC, ETH).")
                     if "portfolio_suggested_price" in st.session_state:
                         del st.session_state["portfolio_suggested_price"]
 
@@ -159,7 +162,7 @@ def render_portfolio_screen():
                 c1, c2 = st.columns(2)
                 with c1:
                     asset_id = st.text_input(
-                        "Asset symbol (stock: AAPL, TTWO | crypto: BTC, ETH or BTC/USDT)",
+                        "Asset symbol (stocks: AAPL, TTWO | crypto: BTC, ETH or BTC/USDT)",
                         value=st.session_state.get("portfolio_suggested_symbol", ""),
                         placeholder="AAPL or BTC",
                         key="form_asset"
@@ -181,16 +184,16 @@ def render_portfolio_screen():
                                 del st.session_state["portfolio_suggested_price"]
                             if "portfolio_suggested_symbol" in st.session_state:
                                 del st.session_state["portfolio_suggested_symbol"]
-                            st.success("Position added. Prices are in USD; P&L is shown in TRY (1 USD = 44 TRY).")
+                            st.success("Position added. Prices are in USD; P/L is shown in TRY (1 USD = 44 TRY).")
                             st.rerun()
 
-        # Positions: USD quotes + TRY P&L
-        st.markdown("### 📋 Positions")
-        if st.button("🔄 Refresh P&L", key="manual_refresh_list", use_container_width=True):
+        # --- Holdings: USD price + TRY P/L ---
+        st.markdown("### 📋 Holdings")
+        if st.button("🔄 Refresh P/L", key="manual_refresh_list", use_container_width=True):
             pass
         st.markdown("<br>", unsafe_allow_html=True)
         if not enriched_rows:
-            st.info("No positions yet. Add one with **Add new position** above.")
+            st.info("No holdings yet. Use **Add new holding** above to get started.")
             return
 
         for i, row in enumerate(enriched_rows):
@@ -206,11 +209,11 @@ def render_portfolio_screen():
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                             <div>
                                 <strong style="font-size: 1.1rem;">{row.get('asset_id', '-')}</strong>
-                                <span style="color: #64748b; margin-left: 10px;">Bought: {row.get('purchase_date', '-')} · {float(row.get('quantity', 0)):,.4f} units @ {purchase_usd:,.2f} USD</span>
+                                <span style="color: #64748b; margin-left: 10px;">Purchase: {row.get('purchase_date', '-')} · {float(row.get('quantity', 0)):,.4f} units @ {purchase_usd:,.2f} USD</span>
                             </div>
                             <div style="text-align: right;">
-                                <span style="color: #94a3b8;">Last: <strong>{current_usd:,.2f} USD</strong></span>
-                                <span style="margin-left: 14px; color: {pnl_color}; font-weight: 700;">{_fmt_money(pnl_tl)} TL ({_fmt_pct(row.get('pnl_pct', 0))})</span>
+                                <span style="color: #94a3b8;">Current: <strong>{current_usd:,.2f} USD</strong></span>
+                                <span style="margin-left: 14px; color: {pnl_color}; font-weight: 700;">{_fmt_money(pnl_tl)} TRY ({_fmt_pct(row.get('pnl_pct', 0))})</span>
                             </div>
                         </div>
                     </div>
@@ -222,7 +225,7 @@ def render_portfolio_screen():
                     if st.button("🗑️ Delete", key=f"del_{rid}_{i}"):
                         ok, err = portfolio_delete(rid, user_id)
                         if ok:
-                            st.success("Record deleted.")
+                            st.success("Entry removed.")
                             st.rerun()
                         else:
                             st.error(err or "Could not delete.")

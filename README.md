@@ -1,11 +1,13 @@
 # FinTrack AI - A+ Luxury Financial Suite
 
+**Author:** Yusuf Berat
+
 ## 🚀 Vizyon
 FinTrack AI; sadece bir varlık takip aracı değil, yatırımcının kararlarını destekleyen yüksek teknolojili bir finans terminalidir.
 
 ---
 
-## 🛠️ Modül 1: Ultra-Luxury Foundation (1. Kişi)
+## 🛠️ Modül 1: Ultra-Luxury Foundation
 Bu modül, projenin kurumsal kimliğini ve teknik iskeletini oluşturur.
 
 ### 💎 A+ Tasarım Standartları
