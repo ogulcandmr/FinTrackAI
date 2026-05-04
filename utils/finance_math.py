@@ -58,10 +58,10 @@ def fetch_dividend_history(tickers):
             yield_pct = (last_div / current_price) * 100 if current_price > 0 else 0.0
             
             data.append({
-                "Sembol": t.replace('.IS', ''),
-                "Son Temettü (TL)": round(last_div, 2),
-                "Verim (%)": round(yield_pct, 2),
-                "Sektör": "Otomotiv" if "FROTO" in t or "DOAS" in t else ("Enerji/Sanayi" if "TUPRS" in t or "ENJSA" in t else "Sanayi/Diğer")
+                "Symbol": t.replace('.IS', ''),
+                "Last Dividend (₺)": round(last_div, 2),
+                "Yield (%)": round(yield_pct, 2),
+                "Sector": "Automotive" if "FROTO" in t or "DOAS" in t else ("Energy/Industry" if "TUPRS" in t or "ENJSA" in t else "Industry/Other")
             })
         except Exception:
             pass
@@ -73,4 +73,4 @@ def get_sectoral_yields(df):
     5. Sektörel temettü verimliliği analiz tablosu hesabı.
     """
     if df.empty: return df
-    return df.groupby("Sektör")["Verim (%)"].mean().reset_index().round(2)
+    return df.groupby("Sector")["Yield (%)"].mean().reset_index().round(2)

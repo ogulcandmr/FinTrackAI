@@ -9,8 +9,8 @@ import yfinance as yf
 def render_dashboard():
     st.markdown("""
         <div class="animate-page" style="background: rgba(15, 23, 42, 0.4); border-radius: 30px; padding: 40px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 2.5rem; backdrop-filter: blur(20px);">
-            <h1 style="font-size: 3.5rem; margin-bottom: 0.5rem; font-weight: 800; letter-spacing: -1px; color:#f8fafc;">🏠 Finansal Kokpit</h1>
-            <p style="color: #cbd5e1; font-size: 1.2rem; font-weight: 400;">Akıllı varlık yönetimi ve anlık veri analizi bir arada.</p>
+            <h1 style="font-size: 3.5rem; margin-bottom: 0.5rem; font-weight: 800; letter-spacing: -1px; color:#f8fafc;">🏠 Financial Cockpit</h1>
+            <p style="color: #cbd5e1; font-size: 1.2rem; font-weight: 400;">Smart wealth management and real-time data analysis all in one.</p>
         </div>
         """, unsafe_allow_html=True)
     
@@ -32,7 +32,7 @@ def render_dashboard():
             if curr_price:
                 val = curr_price * qty
                 total_value += val
-                allocations.append({"Varlık": sym, "Değer (TL)": val * USD_TO_TRY})
+                allocations.append({"Asset": sym, "Value (₺)": val * USD_TO_TRY})
                 
                 pct_change, abs_change = get_daily_change(sym)
                 if pct_change is not None:
@@ -57,24 +57,24 @@ def render_dashboard():
     profit_color = "#10b981" if daily_profit_tl >= 0 else "#ef4444"
     profit_sign = "+" if daily_profit_tl > 0 else ""
     
-    val_sub = "⚖️ Güncel Portföy Büyüklüğü" if total_value_tl > 0 else "⚖️ Veri Bekleniyor"
+    val_sub = "⚖️ Current Portfolio Size" if total_value_tl > 0 else "⚖️ Awaiting Data"
         
-    with col1: st.markdown(metric_css.format(title="📊 Net Portföy", value=f"{total_value_tl:,.2f} TL", val_color="white", sub=val_sub, sub_color="#cbd5e1"), unsafe_allow_html=True)
-    with col2: st.markdown(metric_css.format(title="🚀 Günlük Kazanç", value=f"{profit_sign}{daily_profit_tl:,.2f} TL", val_color=profit_color, sub="Son 24 Saat", sub_color="#cbd5e1"), unsafe_allow_html=True)
-    with col3: st.markdown(metric_css.format(title="💎 Varlık Çeşitliliği", value=str(asset_count), val_color="white", sub="Farklı Enstrüman", sub_color="#cbd5e1"), unsafe_allow_html=True)
+    with col1: st.markdown(metric_css.format(title="📊 Net Portfolio", value=f"{total_value_tl:,.2f} ₺", val_color="white", sub=val_sub, sub_color="#cbd5e1"), unsafe_allow_html=True)
+    with col2: st.markdown(metric_css.format(title="🚀 Daily Profit", value=f"{profit_sign}{daily_profit_tl:,.2f} ₺", val_color=profit_color, sub="Last 24 Hours", sub_color="#cbd5e1"), unsafe_allow_html=True)
+    with col3: st.markdown(metric_css.format(title="💎 Asset Diversity", value=str(asset_count), val_color="white", sub="Unique Instruments", sub_color="#cbd5e1"), unsafe_allow_html=True)
 
     st.markdown("<br><br>", unsafe_allow_html=True)
     
     if portfolio and allocations:
-        st.markdown("### 📈 Portföy Analizi", unsafe_allow_html=True)
+        st.markdown("### 📈 Portfolio Analysis", unsafe_allow_html=True)
         chart_col1, chart_col2 = st.columns(2)
         
         df_alloc = pd.DataFrame(allocations)
-        df_alloc = df_alloc.groupby("Varlık").sum().reset_index()
+        df_alloc = df_alloc.groupby("Asset").sum().reset_index()
         
         with chart_col1:
-            st.markdown("<h4 style='color:#f8fafc; font-weight:700;'>Varlık Dağılımı</h4>", unsafe_allow_html=True)
-            fig_pie = px.pie(df_alloc, names="Varlık", values="Değer (TL)", hole=0.5,
+            st.markdown("<h4 style='color:#f8fafc; font-weight:700;'>Asset Allocation</h4>", unsafe_allow_html=True)
+            fig_pie = px.pie(df_alloc, names="Asset", values="Value (₺)", hole=0.5,
                              color_discrete_sequence=["#3b82f6", "#a855f7", "#10b981", "#f59e0b", "#ef4444", "#06b6d4", "#ec4899", "#8b5cf6"])
             fig_pie.update_traces(textinfo="percent+label", textfont_size=13, textfont_color="#f8fafc",
                                   marker=dict(line=dict(color="rgba(15,23,42,0.8)", width=2)))
@@ -85,15 +85,15 @@ def render_dashboard():
             st.plotly_chart(fig_pie, use_container_width=True)
             
         with chart_col2:
-            st.markdown("<h4 style='color:#f8fafc; font-weight:700;'>Varlık Fiyat Analizi</h4>", unsafe_allow_html=True)
+            st.markdown("<h4 style='color:#f8fafc; font-weight:700;'>Asset Price Analysis</h4>", unsafe_allow_html=True)
             
-            options = df_alloc.sort_values(by="Değer (TL)", ascending=False)["Varlık"].tolist()
+            options = df_alloc.sort_values(by="Value (₺)", ascending=False)["Asset"].tolist()
             
             col_sel1, col_sel2 = st.columns([1, 1])
             with col_sel1:
-                top_asset = st.selectbox("Varlık Seçin", options, label_visibility="collapsed")
+                top_asset = st.selectbox("Select Asset", options, label_visibility="collapsed")
             with col_sel2:
-                chart_type = st.radio("Tip", ["📈 Çizgi", "🕯️ Mum"], horizontal=True, label_visibility="collapsed")
+                chart_type = st.radio("Type", ["📈 Line", "🕯️ Candle"], horizontal=True, label_visibility="collapsed")
             try:
                 syms_to_try = [top_asset]
                 
@@ -116,7 +116,7 @@ def render_dashboard():
                         break
                         
                 if hist is not None and not hist.empty:
-                    if chart_type == "📈 Çizgi":
+                    if chart_type == "📈 Line":
                         fig_chart = go.Figure(data=[go.Scatter(x=hist.index, y=hist['Close'], mode='lines', line=dict(color='#3b82f6', width=3), fill='tozeroy', fillcolor='rgba(59, 130, 246, 0.15)')])
                     else:
                         fig_chart = go.Figure(data=[go.Candlestick(x=hist.index,
@@ -128,7 +128,7 @@ def render_dashboard():
                                         decreasing_line_color='#ef4444', decreasing_fillcolor='rgba(239,68,68,0.3)')])
                                         
                     fig_chart.update_layout(
-                        title=f"{top_asset} - Son 1 Ay",
+                        title=f"{top_asset} - Last 1 Month",
                         xaxis_rangeslider_visible=False,
                         paper_bgcolor="rgba(15, 23, 42, 0.4)",
                         plot_bgcolor="rgba(0,0,0,0)",
@@ -137,13 +137,13 @@ def render_dashboard():
                     )
                     st.plotly_chart(fig_chart, use_container_width=True)
                 else:
-                    st.info(f"{top_asset} ({success_sym}) için fiyat grafiği çizilemedi.")
+                    st.info(f"Price chart could not be plotted for {top_asset} ({success_sym}).")
             except Exception as e:
-                st.warning(f"Grafik yüklenirken bir hata oluştu: {e}")
+                st.warning(f"An error occurred while loading the chart: {e}")
         # --- En Çok Kazanan / Kaybeden Kartı ---
         if daily_changes:
             st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown("### 🏆 Günlük Performans Liderleri", unsafe_allow_html=True)
+            st.markdown("### 🏆 Daily Performance Leaders", unsafe_allow_html=True)
             
             sorted_changes = sorted(daily_changes, key=lambda x: x["pct"], reverse=True)
             # Aynı sembol birden fazla pozisyonda olabilir — unique tut
@@ -180,7 +180,7 @@ def render_dashboard():
                 g_col, l_col = st.columns(2)
                 with g_col:
                     st.markdown(perf_card.format(
-                        icon="🟢", label="En Çok Yükselen", symbol=gainer["symbol"],
+                        icon="🟢", label="Top Gainer", symbol=gainer["symbol"],
                         pct=gainer["pct"], abs_val=abs(gainer["abs"]),
                         sign="+" if gainer["pct"] >= 0 else "",
                         sign_abs="+" if gainer["abs"] >= 0 else "-",
@@ -192,7 +192,7 @@ def render_dashboard():
                     loser_border = "rgba(239, 68, 68, 0.2)" if loser["pct"] < 0 else "rgba(245, 158, 11, 0.2)"
                     st.markdown(perf_card.format(
                         icon="🔴" if loser["pct"] < 0 else "🟡",
-                        label="En Çok Düşen" if loser["pct"] < 0 else "En Az Yükselen",
+                        label="Top Loser" if loser["pct"] < 0 else "Least Gained",
                         symbol=loser["symbol"],
                         pct=loser["pct"], abs_val=abs(loser["abs"]),
                         sign="+" if loser["pct"] >= 0 else "",
@@ -201,4 +201,4 @@ def render_dashboard():
                         border_color=loser_border
                     ), unsafe_allow_html=True)
     else:
-        st.info("Portföyünüzde henüz bir varlık bulunmuyor. Öncelikle sol menüden portföyünüze veri ekleyin.")
+        st.info("There are currently no assets in your portfolio. Please add data to your portfolio from the left menu first.")
