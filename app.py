@@ -182,6 +182,14 @@ st.markdown("""
         transform: translateY(-6px) scale(1.02);
         box-shadow: 0 20px 40px rgba(37, 99, 235, 0.4) !important;
     }
+
+    /* Fix Widget Label Colors */
+    .stApp label p, .stApp div[data-testid="stWidgetLabel"] p, .stApp label {
+        color: #f8fafc !important;
+        font-weight: 600 !important;
+        font-size: 1.05rem !important;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -206,7 +214,7 @@ def render_sidebar():
         menu = [
             "🏛️ Dashboard",
             "💼 Portföyüm",
-            "📅 Temettü Emekliliği Motoru",
+            "📅 Dividend Retirement Engine",
             "🧠 AI Analiz Merkezi",
             "🛡️ Güvenlik & Profil"
         ]
@@ -310,7 +318,7 @@ def main():
                 render_dashboard()
             elif choice == "💼 Portföyüm":
                 render_portfolio_screen()
-            elif choice == "📅 Temettü Emekliliği Motoru":
+            elif choice == "📅 Dividend Retirement Engine":
                 render_dividend_screen()
             elif choice == "🧠 AI Analiz Merkezi":
                 render_ai_screen()
